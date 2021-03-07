@@ -13,7 +13,7 @@ defmodule Kafkaesque.Query do
   @spec pending_messages(Ecto.Repo.t(), pos_integer()) ::
           {:ok, list(Message.t())} | {:error, atom()}
   def pending_messages(repo, demand) do
-    publishing_topics = 
+    publishing_topics =
       Message
       |> select([m], %{topic: fragment("DISTINCT ON (?) ?", m.topic, m.topic)})
       |> where([m], m.state in [:publishing])

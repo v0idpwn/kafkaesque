@@ -25,20 +25,20 @@ defmodule Kafkaesque.Message do
         }
 
   schema "kafkaesque_messages" do
-    field :topic, :string
+    field(:topic, :string)
 
-    field :state, Ecto.Enum,
+    field(:state, Ecto.Enum,
       values: [:failed, :pending, :published, :publishing],
       default: :pending
-    
+    )
 
-    field :body, :map
-    field :attempt, :integer, default: 0
-    field :attempted_by, :string
-    field :offset, :integer
+    field(:body, :map)
+    field(:attempt, :integer, default: 0)
+    field(:attempted_by, :string)
+    field(:offset, :integer)
 
-    field :attempted_at, :naive_datetime
-    field :published_at, :naive_datetime
+    field(:attempted_at, :naive_datetime)
+    field(:published_at, :naive_datetime)
 
     timestamps()
   end
