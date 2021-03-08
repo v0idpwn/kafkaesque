@@ -1,5 +1,5 @@
 defmodule Kafkaesque.MessageTest do
-  use Kafkaesque.Case
+  use Kafkaesque.Case, async: true
 
   alias Kafkaesque.Message
 
