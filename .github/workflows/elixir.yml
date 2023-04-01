@@ -44,7 +44,7 @@ jobs:
     - name: Setup Database
       env:
         MIX_ENV: test
-      run: mix ecto.setup
+      run: mix ecto.create && mix ecto.migrate
     - name: Check formatting
       run: mix format --check-formatted
     - name: Test
