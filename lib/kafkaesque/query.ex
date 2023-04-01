@@ -6,12 +6,13 @@ defmodule Kafkaesque.Query do
   alias Kafkaesque.Message
 
   # Random bigint we use for advisory locking.
-  @xact_lock_key 5184639755711623169
+  @xact_lock_key 5_184_639_755_711_623_169
 
   @doc """
-  Returns the first pending message on each available topic up to the demand limit
+  Returns pending messages for topic/partition combinations that can accept
+  publications.
 
-  Sets those messages to `publishing`.
+  Sets those messages to the `publishing` state.
   """
   @spec pending_messages(Ecto.Repo.t(), pos_integer()) ::
           {:ok, {integer(), list(Message.t())}} | {:error, atom()}

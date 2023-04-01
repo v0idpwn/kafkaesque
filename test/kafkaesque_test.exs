@@ -1,10 +1,9 @@
 defmodule KafkaesqueTest do
-  use Kafkaesque.Case
+  use Kafkaesque.Case, async: false
 
   alias Kafkaesque.Test.Repo
 
   describe "publish/4" do
-    @tag :integration
     test "inserts valid messages" do
       {:ok, %Kafkaesque.Message{}} = Kafkaesque.publish(Repo, "test_topic", 0, "content")
     end

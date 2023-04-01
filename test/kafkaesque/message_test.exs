@@ -3,7 +3,7 @@ defmodule Kafkaesque.MessageTest do
 
   alias Kafkaesque.Message
 
-  describe "new/2" do
+  describe "new/3" do
     test "returns a changeset for a new message" do
       topic = "sample"
       body = "body"

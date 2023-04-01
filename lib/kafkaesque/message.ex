@@ -37,7 +37,6 @@ defmodule Kafkaesque.Message do
     field(:body, :string)
     field(:attempt, :integer, default: 0)
     field(:attempted_by, :string)
-    field(:offset, :integer)
 
     field(:attempted_at, :naive_datetime)
     field(:published_at, :naive_datetime)
