@@ -5,6 +5,9 @@ defmodule Kafkaesque.Query do
 
   alias Kafkaesque.Message
 
+  # Random bigint we use for advisory locking.
+  @xact_lock_key 5184639755711623169
+
   @doc """
   Returns the first pending message on each available topic up to the demand limit
 
@@ -43,7 +46,7 @@ defmodule Kafkaesque.Query do
     ]
 
     repo.transaction(fn ->
-      repo.query!("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE", [])
+      repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key])
 
       Message
       |> where([m], m.id in subquery(subset))

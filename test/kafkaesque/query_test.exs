@@ -19,14 +19,30 @@ defmodule Kafkaesque.QueryTest do
       assert {:ok, {2, [%Message{}, %Message{}]}} = Query.pending_messages(Repo, 10)
       assert {:ok, {0, []}} = Query.pending_messages(Repo, 10)
     end
+
+    test "sets the returned messages as publishing" do
+      Repo.insert(%Message{topic: "foobar"})
+      Repo.insert(%Message{topic: "foobar"})
+      Repo.insert(%Message{topic: "foobaz"})
+
+      assert {:ok, {3, messages}} = Query.pending_messages(Repo, 10)
+      assert Enum.all?(messages, &(&1.state == :publishing))
+    end
   end
 
-  test "sets the returned messages as publishing" do
-    Repo.insert(%Message{topic: "foobar"})
-    Repo.insert(%Message{topic: "foobar"})
-    Repo.insert(%Message{topic: "foobaz"})
+  describe "update_success_batch/2" do
+    test "updates the state of the messages" do
+      {:ok, %{id: id}} = Repo.insert(%Message{topic: "foobar"})
+      assert {1, _} = Query.update_success_batch(Repo, [id])
+      assert %{state: :published} = Repo.get(Message, id)
+    end
+  end
 
-    assert {:ok, {3, messages}} = Query.pending_messages(Repo, 10)
-    assert Enum.all?(messages, &(&1.state == :publishing))
+  describe "update_failed_batch/2" do
+    test "updates the state of the messages" do
+      {:ok, %{id: id}} = Repo.insert(%Message{topic: "foobar"})
+      assert {1, _} = Query.update_failed_batch(Repo, [id])
+      assert %{state: :failed} = Repo.get(Message, id)
+    end
   end
 end
