@@ -42,7 +42,9 @@ jobs:
     - name: Install dependencies
       run: mix deps.get
     - name: Setup Database
-      run: MIX_ENV=test mix ecto.setup
+      env:
+        MIX_ENV: test
+      run: mix ecto.setup
     - name: Check formatting
       run: mix format --check-formatted
     - name: Test
