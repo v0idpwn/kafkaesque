@@ -1,33 +1,50 @@
 defmodule Kafkaesque.Publisher do
   @moduledoc """
-  Publishes polled messages in Kafka
+  Stage that publishes messages in Kafka
+
+  Takes 3 options:
+  - `:producer_pid`: pid of the stage that will produce the messages.
+  - `:client`: the client module that will be used to publish the messages.
+  Defaults to `Kafkaesque.KafkaClients.BrodClient`.
+  - `:client_opts`: A list of options to be passed to the client on startup.
+  Defaults to []. The default client requires options, so this can be considered
+  required for most use-cases.
   """
 
-  @default_opts [reconnect_cool_down_seconds: 2]
+  use GenStage
 
-  def client(opts) do
-    {client_id, opts} = Keyword.pop!(opts, :client_id)
-    {address, opts} = Keyword.pop!(opts, :address)
-    {port, opts} = Keyword.pop!(opts, :port)
-
-    opts = Keyword.merge(@default_opts, opts)
-
-    :ok = :brod.start_client([{address, port}], client_id, opts)
-
-    {:ok, client_id}
+  def start_link(opts) do
+    GenStage.start_link(__MODULE__, opts)
   end
 
-  def publish(client, message) do
-    case :brod.produce_sync_offset(client, message.topic, 0, "", Jason.encode!(message.body)) do
-      :ok ->
-        :ok
+  @impl GenStage
+  def init(opts) do
+    client_mod = Keyword.get(opts, :client, Kafkaesque.KafkaClients.BrodClient)
+    client_opts = Keyword.get(opts, :client_opts, [])
+    producer_pid = Keyword.fetch!(opts, :producer_pid)
 
-      {:error, {:producer_not_found, topic}} ->
-        :brod.start_producer(client, topic, [])
-        publish(client, message)
+    {:ok, client} = client_mod.start_link(client_opts)
 
-      err ->
-        err
+    {
+      :producer_consumer,
+      %{client_mod: client_mod, client: client, demand: 0},
+      [subscribe_to: [producer_pid]]
+    }
+  end
+
+  @impl GenStage
+  def handle_events(messages, _from, state) do
+    case state.client_mod.publish(state.client, messages) do
+      {:ok, %{sucess: success, failure: failure}} ->
+        events = [
+          {:success_batch, Enum.map(success, & &1.id)},
+          {:failure_batch, Enum.map(failure, & &1.id)}
+        ]
+
+        {:noreply, events, state}
+
+      _error ->
+        {:noreply, [], state}
     end
   end
 end

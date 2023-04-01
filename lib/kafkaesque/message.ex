@@ -1,27 +1,28 @@
 defmodule Kafkaesque.Message do
   @moduledoc """
-  A Message to be published on Kafka
+  Application-side representation of messages, published or not
   """
 
   use Ecto.Schema
   import Ecto.Changeset
 
-  @type state ::
+  @type state() ::
           :failed
           | :pending
           | :published
           | :publishing
 
-  @type message :: %__MODULE__{
-          topic: String.t(),
+  @type t() :: %__MODULE__{
           state: state(),
-          body: map(),
+          topic: String.t(),
+          partition: integer(),
+          body: String.t(),
           attempt: pos_integer(),
-          attempted_by: String.t(),
-          attempted_at: NaiveDateTime.t(),
-          published_at: NaiveDateTime.t(),
-          inserted_at: NaiveDateTime.t(),
-          updated_at: NaiveDateTime.t()
+          attempted_by: String.t() | nil,
+          attempted_at: NaiveDateTime.t() | nil,
+          published_at: NaiveDateTime.t() | nil,
+          inserted_at: NaiveDateTime.t() | nil,
+          updated_at: NaiveDateTime.t() | nil
         }
 
   schema "kafkaesque_messages" do
@@ -32,7 +33,8 @@ defmodule Kafkaesque.Message do
       default: :pending
     )
 
-    field(:body, :map)
+    field(:partition, :integer)
+    field(:body, :string)
     field(:attempt, :integer, default: 0)
     field(:attempted_by, :string)
     field(:offset, :integer)
@@ -43,12 +45,14 @@ defmodule Kafkaesque.Message do
     timestamps()
   end
 
-  def new(topic, body) do
+  @spec new(String.t(), String.t(), String.t()) :: Ecto.Changeset.t()
+  def new(topic, partition, body) do
     %__MODULE__{}
-    |> cast(%{topic: topic, body: body}, [:topic, :body])
-    |> validate_required([:topic, :body])
+    |> cast(%{topic: topic, partition: partition, body: body}, [
+      :topic,
+      :partition,
+      :body
+    ])
+    |> validate_required([:topic, :partition, :body])
   end
-
-  def set_published(message, offset), do: change(message, offset: offset, state: :published)
-  def set_failed(message), do: change(message, state: :failed)
 end

@@ -27,6 +27,7 @@ defmodule Kafkaesque.MixProject do
 
   defp deps do
     [
+      {:gen_stage, "~> 1.0"},
       {:brod, "~> 3.15"},
       {:ecto, "~> 3.5"},
       {:ecto_sql, ">= 3.4.3"},

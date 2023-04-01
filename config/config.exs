@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :kafkaesque, Kafkaesque.Test.Repo,
   priv: "test/support/",
