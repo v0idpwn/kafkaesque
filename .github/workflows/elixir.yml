@@ -1,4 +1,4 @@
-name: Elixir CI
+name: Build and test
 
 on:
   push:
@@ -13,12 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Elixir
-      uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
+    - uses: actions/checkout@v3
+    - uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.11' # Define the elixir version [required]
-        otp-version: '23.2' # Define the OTP version [required]
+        elixir-version: '1.14'
+        otp-version: '25'
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
@@ -29,3 +28,7 @@ jobs:
       run: mix deps.get
     - name: Check formatting
       run: mix format --check-formatted
+    - name: Test
+      run: mix test
+    - name: Dialyzer
+      run: mix dialyzer
