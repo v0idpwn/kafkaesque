@@ -54,7 +54,7 @@ defmodule Kafkaesque do
   - `:repo`: the repo where messages will be read from. Usually should be the
   same repo that you're writing to.
   - `:client`: the client to be used by the publisher. Defaults to
-  `Kafkaesque.KafkaClients.BrodClient`
+  `Kafkaesque.Clients.BrodClient`
   - `:client_opts`: the options to be used by the client. Defaults to `[]`. The
   default client requires options, so this can be considered required for most
   use-cases. Look at the client documentation for more information about the

@@ -1,7 +1,7 @@
-defmodule Kafkaesque.KafkaClients.BrodClientTest do
+defmodule Kafkaesque.Clients.BrodClientTest do
   use Kafkaesque.Case, async: false
 
-  alias Kafkaesque.KafkaClients.BrodClient
+  alias Kafkaesque.Clients.BrodClient
 
   setup_all do
     topic_configs = [

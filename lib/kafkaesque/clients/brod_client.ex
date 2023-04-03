@@ -1,4 +1,4 @@
-defmodule Kafkaesque.KafkaClients.BrodClient do
+defmodule Kafkaesque.Clients.BrodClient do
   @moduledoc """
   Basic client implementation using brod
 

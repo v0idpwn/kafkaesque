@@ -5,7 +5,7 @@ defmodule Kafkaesque.Publisher do
   Takes 3 options:
   - `:producer_pid`: pid of the stage that will produce the messages.
   - `:client`: the client module that will be used to publish the messages.
-  Defaults to `Kafkaesque.KafkaClients.BrodClient`.
+  Defaults to `Kafkaesque.Clients.BrodClient`.
   - `:client_opts`: A list of options to be passed to the client on startup.
   Defaults to `[]`. The default client requires options, so this can be
   considered required for most use-cases.
@@ -19,7 +19,7 @@ defmodule Kafkaesque.Publisher do
 
   @impl GenStage
   def init(opts) do
-    client_mod = Keyword.get(opts, :client, Kafkaesque.KafkaClients.BrodClient)
+    client_mod = Keyword.get(opts, :client, Kafkaesque.Clients.BrodClient)
     client_opts = Keyword.get(opts, :client_opts, [])
     producer_pid = Keyword.fetch!(opts, :producer_pid)
     # min_demand = Keyword.get(opts, :publisher_min_demand, 190)
