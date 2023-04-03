@@ -82,7 +82,7 @@ defmodule Kafkaesque do
       |> Keyword.put(:publisher_pid, publisher_pid)
       |> Kafkaesque.Acknowledger.start_link()
 
-    # {:ok, stager_pid} = Kafkaesque.Stager.start_link(opts)
+    {:ok, rescuer} = Kafkaesque.Rescuer.start_link(opts)
 
     {:ok, %{producer: producer_pid, publisher: publisher_pid, acknowledger: acknowledger_pid}}
   end

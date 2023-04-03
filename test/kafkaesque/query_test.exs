@@ -52,4 +52,19 @@ defmodule Kafkaesque.QueryTest do
       assert %{state: :failed} = Repo.get(Message, id)
     end
   end
+
+  describe "rescue_publishing_messages/1" do
+    test "updates the state of the messages" do
+      {:ok, message} =
+        Repo.insert(%Message{
+          topic: "foobar",
+          partition: 0,
+          state: :publishing,
+          attempted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+
+      assert {1, _} = Query.rescue_publishing_messages(Repo, 0)
+      assert %{state: :pending} = Repo.reload(message)
+    end
+  end
 end

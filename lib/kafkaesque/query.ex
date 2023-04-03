@@ -34,22 +34,21 @@ defmodule Kafkaesque.Query do
       |> order_by([m], m.id)
       |> limit(^demand)
 
-    updates = [
-      set: [
-        state: "publishing",
-        attempted_at: NaiveDateTime.utc_now(),
-        attempted_by: inspect(node())
-      ],
-      inc: [attempt: 1]
-    ]
-
     repo.transaction(fn ->
       repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key])
 
       Message
       |> where([m], m.id in subquery(subset))
       |> select([m, _], m)
-      |> repo.update_all(updates)
+      |> update([m],
+        set: [
+          state: :publishing,
+          attempted_at: fragment("CURRENT_TIMESTAMP"),
+          attempted_by: ^inspect(node())
+        ],
+        inc: [attempt: 1]
+      )
+      |> repo.update_all([])
       |> case do
         {0, nil} -> []
         {count, messages} -> {count, messages}
@@ -71,5 +70,17 @@ defmodule Kafkaesque.Query do
     from(Message)
     |> where([m], m.id in ^ids)
     |> repo.update_all(set: [state: new_state])
+  end
+
+  @spec rescue_publishing_messages(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
+          {pos_integer(), nil}
+  def rescue_publishing_messages(repo, time_limit_ms) do
+    time_limit_s = time_limit_ms / 1000
+
+    from(Message)
+    |> where([m], m.state == :publishing)
+    |> where([m], m.attempted_at < ago(^time_limit_s, "second"))
+    |> update([m], set: [state: :pending])
+    |> repo.update_all([])
   end
 end
