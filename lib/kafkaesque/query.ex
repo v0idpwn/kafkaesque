@@ -20,10 +20,8 @@ defmodule Kafkaesque.Query do
     publishing_topic_partitions =
       Message
       |> group_by([m], [m.topic, m.partition])
-      |> where([m], m.state in [:publishing])
+      |> where([m], m.state == :publishing)
       |> select([m], [:topic, :partition])
-
-    # IO.inspect(publishing_topic_partitions |> repo.all(), label: :publishing_topics)
 
     subset =
       Message
@@ -32,10 +30,9 @@ defmodule Kafkaesque.Query do
         on: m.topic == tp.topic and m.partition == tp.partition
       )
       |> where([m, tp], is_nil(tp.topic))
+      |> where([m], m.state in [:pending, :failed])
       |> order_by([m], m.id)
       |> limit(^demand)
-
-    # IO.inspect(subset |> repo.all(), label: :subset, charlists: :as_lists)
 
     updates = [
       set: [

@@ -54,6 +54,8 @@ defmodule Kafkaesque.Clients.BrodClient do
       Enum.group_by(messages, fn m ->
         Map.fetch!(task_results, {m.partition, m.topic})
       end)
+      |> Map.put_new(:success, [])
+      |> Map.put_new(:error, [])
 
     {:ok, result}
   end

@@ -93,8 +93,9 @@ defmodule Kafkaesque do
     quote do
       @spec publish(String.t(), term()) :: {:ok, Kafkaesque.Message.t()} | {:error, atom()}
       def publish(topic, body) do
-        payload = encode(message)
-        Kafkaesque.publish(unquote(repo), topic, payload)
+        payload = encode(body)
+        partition = partition(topic, body)
+        Kafkaesque.publish(unquote(repo), topic, partition, payload)
       end
 
       @spec encode(term()) :: String.t()
