@@ -19,15 +19,15 @@ defmodule Kafkaesque.Rescuer do
   @impl GenServer
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
-    interval_ms = Keyword.get(opts, :rescuer_interval_ms, 5_000)
-    limit_ms = Keyword.get(opts, :rescuer_limit_ms, 15_000)
+    interval_ms = Keyword.get(opts, :rescuer_interval_ms, :timer.seconds(5))
+    limit_ms = Keyword.get(opts, :rescuer_limit_ms, :timer.seconds(15))
 
     {:ok, %{repo: repo, interval_ms: interval_ms, limit_ms: limit_ms}, {:continue, :rescue}}
   end
 
   @impl GenServer
   def handle_continue(:rescue, state) do
-    Query.rescue_publishing_messages(state.repo, state.limit_ms)
+    Query.rescue_publishing(state.repo, state.limit_ms)
 
     {:noreply, state, {:continue, :schedule_next}}
   end

@@ -53,9 +53,9 @@ defmodule Kafkaesque.QueryTest do
     end
   end
 
-  describe "rescue_publishing_messages/1" do
+  describe "rescue_publishing/2" do
     test "updates the state of the messages" do
-      {:ok, message} =
+      {:ok, publishing_message} =
         Repo.insert(%Message{
           topic: "foobar",
           partition: 0,
@@ -63,8 +63,41 @@ defmodule Kafkaesque.QueryTest do
           attempted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
         })
 
-      assert {1, _} = Query.rescue_publishing_messages(Repo, 0)
-      assert %{state: :pending} = Repo.reload(message)
+      {:ok, published_message} =
+        Repo.insert(%Message{
+          topic: "foobar",
+          partition: 0,
+          state: :published,
+          attempted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+
+      assert {1, _} = Query.rescue_publishing(Repo, 0)
+      assert %{state: :pending} = Repo.reload(publishing_message)
+      assert %{state: :published} = Repo.reload(published_message)
+    end
+  end
+
+  describe "garbage_collect/2" do
+    test "deletes published messages" do
+      {:ok, pending_message} =
+        Repo.insert(%Message{
+          topic: "foobar",
+          partition: 0,
+          state: :pending,
+          attempted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+
+      {:ok, published_message} =
+        Repo.insert(%Message{
+          topic: "foobar",
+          partition: 0,
+          state: :published,
+          attempted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        })
+
+      assert {1, _} = Query.garbage_collect(Repo, 0)
+      assert %{state: :pending} = Repo.reload(pending_message)
+      assert is_nil(Repo.reload(published_message))
     end
   end
 end

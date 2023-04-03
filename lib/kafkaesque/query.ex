@@ -72,9 +72,9 @@ defmodule Kafkaesque.Query do
     |> repo.update_all(set: [state: new_state])
   end
 
-  @spec rescue_publishing_messages(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
+  @spec rescue_publishing(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
           {pos_integer(), nil}
-  def rescue_publishing_messages(repo, time_limit_ms) do
+  def rescue_publishing(repo, time_limit_ms) do
     time_limit_s = time_limit_ms / 1000
 
     from(Message)
@@ -82,5 +82,16 @@ defmodule Kafkaesque.Query do
     |> where([m], m.attempted_at < ago(^time_limit_s, "second"))
     |> update([m], set: [state: :pending])
     |> repo.update_all([])
+  end
+
+  @spec garbage_collect(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
+          {pos_integer(), nil}
+  def garbage_collect(repo, time_limit_ms) do
+    time_limit_s = time_limit_ms / 1000
+
+    from(Message)
+    |> where([m], m.state == :published)
+    |> where([m], m.attempted_at < ago(^time_limit_s, "second"))
+    |> repo.delete_all()
   end
 end
