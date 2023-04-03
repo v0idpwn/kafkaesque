@@ -84,7 +84,16 @@ defmodule Kafkaesque do
 
     {:ok, rescuer} = Kafkaesque.Rescuer.start_link(opts)
 
-    {:ok, %{producer: producer_pid, publisher: publisher_pid, acknowledger: acknowledger_pid}}
+    {:ok, garbage_collector} = Kafkaesque.GarbageCollector.start_link(opts)
+
+    {:ok,
+     %{
+       producer: producer_pid,
+       publisher: publisher_pid,
+       acknowledger: acknowledger_pid,
+       rescuer: rescuer,
+       garbage_collector: garbage_collector
+     }}
   end
 
   defmacro __using__(opts) do

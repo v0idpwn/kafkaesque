@@ -22,15 +22,15 @@ defmodule Kafkaesque.Publisher do
     client_mod = Keyword.get(opts, :client, Kafkaesque.Clients.BrodClient)
     client_opts = Keyword.get(opts, :client_opts, [])
     producer_pid = Keyword.fetch!(opts, :producer_pid)
-    # min_demand = Keyword.get(opts, :publisher_min_demand, 190)
-    # max_demand = Keyword.get(opts, :publisher_max_demand, 200)
+    min_demand = Keyword.get(opts, :publisher_min_demand, 190)
+    max_demand = Keyword.get(opts, :publisher_max_demand, 200)
 
     {:ok, client} = client_mod.start_link(client_opts)
 
     {
       :producer_consumer,
       %{client_mod: client_mod, client: client, demand: 0},
-      [subscribe_to: [producer_pid]]
+      [subscribe_to: [{producer_pid, min_demand: min_demand, max_demand: max_demand}]]
     }
   end
 

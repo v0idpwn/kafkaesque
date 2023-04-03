@@ -17,7 +17,8 @@ defmodule Kafkaesque.GarbageCollector do
     interval_ms = Keyword.get(opts, :garbage_collector_interval_ms, :timer.seconds(15))
     limit_ms = Keyword.get(opts, :garbage_collector_limit_ms, :timer.hours(72))
 
-    {:ok, %{repo: repo, interval_ms: interval_ms, limit_ms: limit_ms}, {:continue, :rescue}}
+    {:ok, %{repo: repo, interval_ms: interval_ms, limit_ms: limit_ms},
+     {:continue, :garbage_collect}}
   end
 
   @impl GenServer
