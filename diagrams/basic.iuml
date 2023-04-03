@@ -1,0 +1,40 @@
+@startuml
+skinparam componentStyle uml2
+skinparam linetype ortho
+
+database "Kafka" {
+  [Broker]
+}
+
+node "Application" {
+  package "Kafkaesque" {
+    folder "Publish pipeline" {
+      [Producer] -> [Publisher]
+      [Publisher] -> [Acknowledger]
+    }
+    [Rescuer]
+    [Garbage Collector]
+  }
+
+
+  package "MyApp" {
+    [Context] --> MyApp.Kafka
+    MyApp.Kafka --> MyApp.Repo: write
+  }
+}
+
+
+database "PostgreSQL" {
+  [Messages table]
+}
+
+
+[Producer] --> MyApp.Repo: read
+[Acknowledger] --> MyApp.Repo: write
+[Rescuer] --> MyApp.Repo: write
+[Garbage Collector] --> MyApp.Repo: write
+MyApp.Repo --> [Messages table]
+[Publisher] -up-> [Broker]: publish
+[Broker] -down-> [Publisher]: ack
+
+@enduml
