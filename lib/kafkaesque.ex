@@ -25,6 +25,9 @@ defmodule Kafkaesque do
 
   `partition/2` should return an integer, and defaults to 0. It will be used
   as the partition for the message.
+
+  See the documentation for `Kafkaesque.start_link/1` to learn about starting
+  Kafkaesque in your application.
   """
 
   use GenServer
@@ -47,6 +50,19 @@ defmodule Kafkaesque do
 
   @doc """
   Starts a Kafkaesque instance. Accepts the following opts:
+
+  - `:repo`: the repo where messages will be read from. Usually should be the
+  same repo that you're writing to.
+  - `:client`: the client to be used by the publisher. Defaults to
+  `Kafkaesque.KafkaClients.BrodClient`
+  - `:client_opts`: the options to be used by the client. Defaults to `[]`. The
+  default client requires options, so this can be considered required for most
+  use-cases. Look at the client documentation for more information about the
+  client options.
+  - `:publisher_max_demand`: maximum publisher demand, can be useful for tuning.
+  Defaults to 200. See `GenStage` documentation for more info.
+  - `:publisher_min_demand`: minimum publisher demand, can be useful for tuning.
+  Defaults to 190. See `GenStage` documentation for more info.
   """
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
@@ -75,10 +91,6 @@ defmodule Kafkaesque do
     {repo, _opts} = Keyword.pop!(opts, :repo)
 
     quote do
-      def start_link(opts) do
-        Kafkaesque.start_link(opts)
-      end
-
       @spec publish(String.t(), term()) :: {:ok, Kafkaesque.Message.t()} | {:error, atom()}
       def publish(topic, body) do
         payload = encode(message)

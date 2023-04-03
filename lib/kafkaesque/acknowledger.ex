@@ -16,17 +16,18 @@ defmodule Kafkaesque.Acknowledger do
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
-    producer_pid = Keyword.fetch!(opts, :publishr_pid)
+    publisher_pid = Keyword.fetch!(opts, :publisher_pid)
 
     {
       :consumer,
       %{repo: repo},
-      [subscribe_to: [producer_pid]]
+      [subscribe_to: [publisher_pid]]
     }
   end
 
   # TODO: possibly perform additional batching for performance in cases where
-  # batches are mostly composed by messages from different queues.
+  # workload is mostly composed by messages from different queues (thus coming
+  # in different batches)
   @impl GenStage
   def handle_events(events, _from, state) do
     Enum.each(events, &handle_event(&1, state))

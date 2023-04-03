@@ -7,8 +7,8 @@ defmodule Kafkaesque.Publisher do
   - `:client`: the client module that will be used to publish the messages.
   Defaults to `Kafkaesque.KafkaClients.BrodClient`.
   - `:client_opts`: A list of options to be passed to the client on startup.
-  Defaults to []. The default client requires options, so this can be considered
-  required for most use-cases.
+  Defaults to `[]`. The default client requires options, so this can be
+  considered required for most use-cases.
   """
 
   use GenStage
@@ -22,6 +22,8 @@ defmodule Kafkaesque.Publisher do
     client_mod = Keyword.get(opts, :client, Kafkaesque.KafkaClients.BrodClient)
     client_opts = Keyword.get(opts, :client_opts, [])
     producer_pid = Keyword.fetch!(opts, :producer_pid)
+    # min_demand = Keyword.get(opts, :publisher_min_demand, 190)
+    # max_demand = Keyword.get(opts, :publisher_max_demand, 200)
 
     {:ok, client} = client_mod.start_link(client_opts)
 
@@ -35,10 +37,10 @@ defmodule Kafkaesque.Publisher do
   @impl GenStage
   def handle_events(messages, _from, state) do
     case state.client_mod.publish(state.client, messages) do
-      {:ok, %{sucess: success, failure: failure}} ->
+      {:ok, %{success: success, error: error}} ->
         events = [
           {:success_batch, Enum.map(success, & &1.id)},
-          {:failure_batch, Enum.map(failure, & &1.id)}
+          {:failure_batch, Enum.map(error, & &1.id)}
         ]
 
         {:noreply, events, state}
