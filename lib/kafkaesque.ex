@@ -63,6 +63,15 @@ defmodule Kafkaesque do
   Defaults to 200. See `GenStage` documentation for more info.
   - `:publisher_min_demand`: minimum publisher demand, can be useful for tuning.
   Defaults to 190. See `GenStage` documentation for more info.
+  - `:rescuer_interval_ms`: the interval between garbage collection
+  runs. Defaults to 15 seconds. Notice that it always runs on tree startup.
+  - `rescuer_limit_ms`: the time limit for records to be in the publishing
+  state. Defaults to 15 seconds. Notice that they may stay longer in this state
+  due to the interval.
+  - `:garbage_collector_interval_ms`: the interval between garbage collection
+  runs. Defaults to 30 seconds. Notice that it always runs on tree startup.
+  - `garbage_colletor_limit_ms`: the time limit for published records to be in
+  the table. Defaults to 72 hours.
   """
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
