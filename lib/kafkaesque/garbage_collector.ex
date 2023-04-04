@@ -30,7 +30,9 @@ defmodule Kafkaesque.GarbageCollector do
 
   @impl GenServer
   def handle_continue(:garbage_collect, state) do
-    Query.garbage_collect(state.repo, state.limit_ms)
+    :telemetry.span([:kafkaesque, :garbage_collect], %{repo: state.repo}, fn ->
+      {Query.garbage_collect(state.repo, state.limit_ms), %{}}
+    end)
 
     {:noreply, state, {:continue, :schedule_next}}
   end

@@ -30,7 +30,10 @@ defmodule Kafkaesque.Acknowledger do
   # in different batches)
   @impl GenStage
   def handle_events(events, _from, state) do
-    Enum.each(events, &handle_event(&1, state))
+    :telemetry.span([:kafkaesque, :acknowledge], %{repo: state.repo}, fn ->
+      {Enum.each(events, &handle_event(&1, state)), %{}}
+    end)
+
     {:noreply, [], state}
   end
 

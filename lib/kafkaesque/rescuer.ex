@@ -36,7 +36,9 @@ defmodule Kafkaesque.Rescuer do
 
   @impl GenServer
   def handle_continue(:rescue, state) do
-    Query.rescue_publishing(state.repo, state.limit_ms)
+    :telemetry.span([:kafkaesque, :rescue], %{repo: state.repo}, fn ->
+      {Query.rescue_publishing(state.repo, state.limit_ms), %{}}
+    end)
 
     {:noreply, state, {:continue, :schedule_next}}
   end

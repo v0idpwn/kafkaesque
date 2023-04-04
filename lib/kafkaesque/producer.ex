@@ -43,28 +43,33 @@ defmodule Kafkaesque.Producer do
   defp produce_messages(new_demand, state) do
     demand = new_demand + state.demand
 
-    case Query.pending_messages(state.repo, demand) do
-      {:ok, {count, messages}} ->
-        remaining_demand = demand - count
+    :telemetry.span([:kafkaesque, :produce], %{repo: state.repo, demand: demand}, fn ->
+      response =
+        case Query.pending_messages(state.repo, demand) do
+          {:ok, {count, messages}} ->
+            remaining_demand = demand - count
 
-        if remaining_demand == 0 do
-          {:noreply, messages, %{state | demand: remaining_demand}}
-        else
-          backoff = next_backoff(state.backoff, state.max_backoff, count)
-          send_tick_after_backoff(backoff)
-          {:noreply, messages, %{state | backoff: backoff, demand: remaining_demand}}
+            if remaining_demand == 0 do
+              {:noreply, messages, %{state | demand: remaining_demand}}
+            else
+              backoff = next_backoff(state.backoff, state.max_backoff, count)
+              send_tick_after_backoff(backoff)
+              {:noreply, messages, %{state | backoff: backoff, demand: remaining_demand}}
+            end
+
+          error ->
+            backoff = next_backoff(state.backoff, state.max_backoff, 0)
+
+            Logger.warn(
+              "#{inspect(__MODULE__)}.produce_messages/2 failed with #{inspect(error)}, retrying in #{backoff}ms"
+            )
+
+            send_tick_after_backoff(backoff)
+            {:noreply, [], %{state | backoff: backoff, demand: demand}}
         end
 
-      error ->
-        backoff = next_backoff(state.backoff, state.max_backoff, 0)
-
-        Logger.warn(
-          "#{inspect(__MODULE__)}.produce_messages/2 failed with #{inspect(error)}, retrying in #{backoff}ms"
-        )
-
-        send_tick_after_backoff(backoff)
-        {:noreply, [], %{state | backoff: backoff, demand: demand}}
-    end
+      {response, %{}}
+    end)
   end
 
   defp send_tick_after_backoff(backoff) do

@@ -83,6 +83,7 @@ defmodule Kafkaesque.PublisherTest do
 
     {:ok, publisher_pid} =
       Kafkaesque.Publisher.start_link(
+        repo: Kafkaesque.Test.Repo,
         producer_pid: producer_pid,
         client: StubClient,
         client_opts: [test_pid: self()]
