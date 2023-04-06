@@ -1,0 +1,19 @@
+@startuml
+skinparam nodesep 20
+skinparam ranksep 40
+
+(Kafkaesque.Supervisor) -- (Kafkaesque.Rescuer)
+(Kafkaesque.Supervisor) -- (Kafkaesque.GarbageCollector)
+(Kafkaesque.Supervisor) -- (Kafkaesque.Pipeline)
+(Kafkaesque.Pipeline) -- (Kafkaesque.Producer)
+(Kafkaesque.Pipeline) -- (Kafkaesque.Publisher)
+(Kafkaesque.Pipeline) -- (Kafkaesque.Acknowledger)
+
+package "BrodClient" {
+  (Kafkaesque.Publisher) -- (Kafkaesque.Clients.BrodClient)
+  (Kafkaesque.Clients.BrodClient) -- (TaskSupervisor)
+  (TaskSupervisor) -- (Task 1)
+  (TaskSupervisor) -- (Task 2)
+  (TaskSupervisor) -- (Task 3)
+}
+@enduml
