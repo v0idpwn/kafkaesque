@@ -1,4 +1,8 @@
 defmodule Kafkaesque.Client do
+  @moduledoc """
+  Behaviour for clients
+  """
+
   alias Kafkaesque.Message
 
   @type client() :: term()

@@ -1,13 +1,13 @@
 defmodule Kafkaesque.MixProject do
   use Mix.Project
 
-  @version "0.0.1"
+  @version "1.0.0-rc.0"
 
   def project do
     [
       app: :kafkaesque,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -15,6 +15,7 @@ defmodule Kafkaesque.MixProject do
       description: description(),
       package: package(),
       name: "Kafkaesque",
+      docs: docs(),
       source_url: "https://github.com/v0idpwn/kafkaesque"
     ]
   end
@@ -36,6 +37,21 @@ defmodule Kafkaesque.MixProject do
       {:telemetry, "~> 0.4"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "Kafkaesque",
+      source_ref: "#v{@version}",
+      extra_section: "GUIDES",
+      extras: extras()
+    ]
+  end
+
+  defp extras do
+    [
+      "guides/getting-started.md"
     ]
   end
 

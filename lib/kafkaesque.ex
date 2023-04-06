@@ -1,33 +1,31 @@
 defmodule Kafkaesque do
   @moduledoc """
-  This module provides a message publishing API through `Kafkaesque.publish/3`.
+  This module provides the main APIs for Kafkaesque
 
-  It also allows you to `use` it and have a streamlined publishing function,
-  possibly providing encodin function:
+  ### Introduction
 
+  Kafkaesque is an outbox library built for PostgreSQL and designed, primarily,
+  for Kafka, though usage with other software is possible and encouraged.
 
-      defmodule MyApp.Kafka do
-        use Kafkaesque, repo: MyApp.Repo
+  - Transactional safety for messages: if they were created, they **will** be
+  eventually published. They're only created if the transaction commits.
+  - Ordering: messages are published sequentially for topic/partition combinations
+  - Shutdown safety: has graceful shutdown and rescue for cases where it doesn't
+  happen.
+  - Observability: all operations publish telemetry events.
+  - Garbage collection: outbox table is periodically cleaned.
+  - Multi-node safe: safety powered by PostgreSQL.
 
-        # Optional, defaults to `body`
-        def encode(body) do
-          Jason.encode!(body)
-        end
+  For a comprehensive installation guide, check the [Getting started]("getting-started.md")
+  guide.
 
-        def partition(_topic, %MyMessage{id: id}) do
-          id
-        end
-      end
+  ![Basic diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/v0idpwn/kafkaesque/master/diagrams/basic.iuml)
 
-      MyApp.Kafka.publish("my_topic", %{hello: :kafka})
+  #### Note
 
-  `encode/1` should return a string, and defaults to the identity function.
-
-  `partition/2` should return an integer, and defaults to 0. It will be used
-  as the partition for the message.
-
-  See the documentation for `Kafkaesque.start_link/1` to learn about starting
-  Kafkaesque in your application.
+  For most cases, this module shouldn't be called directly. Instead, you want to
+  `use` it to define an outbox for your application, and call the outbox, as you
+  do with Ecto repos.
   """
 
   alias Kafkaesque.Message
@@ -60,7 +58,9 @@ defmodule Kafkaesque do
   end
 
   @doc """
-  Starts a Kafkaesque instance. Accepts the following opts:
+  Starts a Kafkaesque instance.
+
+  Accepts the following opts:
 
   - `:repo`: the repo where messages will be read from. Usually should be the
   same repo that you're writing to.
@@ -89,11 +89,16 @@ defmodule Kafkaesque do
   the table. Defaults to 72 hours.
   - `query_opts`: Options to pass to Ecto queries. Defaults to [log: false]
   """
+  @spec start_link(Keyword.t()) :: {:ok, pid()}
   def start_link(opts) do
     opts = Keyword.validate!(opts, [:repo] ++ @default_opts)
     Kafkaesque.Supervisor.start_link(opts)
   end
 
+  @doc """
+  Child spec for a Kafkaesque instance
+  """
+  @spec child_spec(Keyword.t()) :: Supervisor.child_spec()
   def child_spec(opts) do
     opts = Keyword.validate!(opts, [:repo] ++ @default_opts)
     Kafkaesque.Supervisor.child_spec(opts)
@@ -118,6 +123,18 @@ defmodule Kafkaesque do
       @spec partition(String.t(), term()) :: integer()
       def partition(_topic, _body) do
         0
+      end
+
+      @spec start_link(Keyword.t()) :: {:ok, pid}
+      def start_link(opts) do
+        opts = Keyword.merge(unquote(opts), opts)
+        Kafkaesque.start_link(opts)
+      end
+
+      @spec child_spec(Keyword.t()) :: Supervisor.child_spec()
+      def child_spec(opts) do
+        opts = Keyword.merge(unquote(opts), opts)
+        Kafkaesque.child_spec(opts)
       end
 
       defoverridable encode: 1, partition: 2

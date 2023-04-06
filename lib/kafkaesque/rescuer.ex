@@ -32,7 +32,8 @@ defmodule Kafkaesque.Rescuer do
     interval_ms = Keyword.fetch!(opts, :rescuer_interval_ms)
     limit_ms = Keyword.fetch!(opts, :rescuer_limit_ms)
 
-    {:ok, %{repo: repo, query_opts: query_opts, interval_ms: interval_ms, limit_ms: limit_ms}, {:continue, :rescue}}
+    {:ok, %{repo: repo, query_opts: query_opts, interval_ms: interval_ms, limit_ms: limit_ms},
+     {:continue, :rescue}}
   end
 
   @impl GenServer

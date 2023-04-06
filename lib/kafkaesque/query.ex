@@ -34,30 +34,33 @@ defmodule Kafkaesque.Query do
       |> order_by([m], m.id)
       |> limit(^demand)
 
-    repo.transaction(fn ->
-      repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key], query_opts)
+    repo.transaction(
+      fn ->
+        repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key], query_opts)
 
-      Message
-      |> where([m], m.id in subquery(subset))
-      |> select([m, _], m)
-      |> update([m],
-        set: [
-          state: :publishing,
-          attempted_at: fragment("CURRENT_TIMESTAMP"),
-          attempted_by: ^inspect(node())
-        ],
-        inc: [attempt: 1]
-      )
-      |> repo.update_all([], query_opts)
-      |> case do
-        {0, nil} ->
-          {0, []}
+        Message
+        |> where([m], m.id in subquery(subset))
+        |> select([m, _], m)
+        |> update([m],
+          set: [
+            state: :publishing,
+            attempted_at: fragment("CURRENT_TIMESTAMP"),
+            attempted_by: ^inspect(node())
+          ],
+          inc: [attempt: 1]
+        )
+        |> repo.update_all([], query_opts)
+        |> case do
+          {0, nil} ->
+            {0, []}
 
-        {count, messages} ->
-          sorted = Enum.sort(messages, fn m1, m2 -> m1.id <= m2.id end)
-          {count, sorted}
-      end
-    end, query_opts)
+          {count, messages} ->
+            sorted = Enum.sort(messages, fn m1, m2 -> m1.id <= m2.id end)
+            {count, sorted}
+        end
+      end,
+      query_opts
+    )
   end
 
   @spec update_success_batch(Ecto.Repo.t(), [pos_integer()], Keyword.t()) :: :ok
