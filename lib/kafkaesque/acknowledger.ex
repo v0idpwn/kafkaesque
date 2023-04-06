@@ -25,6 +25,14 @@ defmodule Kafkaesque.Acknowledger do
     }
   end
 
+  def shutdown(pid, timeout) do
+    try do
+      GenStage.stop(pid, :shutdown, timeout)
+    catch
+      _, _ -> :ok
+    end
+  end
+
   # TODO: possibly perform additional batching for performance in cases where
   # workload is mostly composed by messages from different queues (thus coming
   # in different batches)

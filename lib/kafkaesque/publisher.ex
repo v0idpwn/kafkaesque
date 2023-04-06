@@ -22,6 +22,14 @@ defmodule Kafkaesque.Publisher do
     GenStage.start_link(__MODULE__, opts)
   end
 
+  def shutdown(pid, timeout) do
+    try do
+      GenStage.stop(pid, :shutdown, timeout)
+    catch
+      _, _ -> :ok
+    end
+  end
+
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)

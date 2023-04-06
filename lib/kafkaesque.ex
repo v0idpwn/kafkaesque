@@ -30,8 +30,6 @@ defmodule Kafkaesque do
   Kafkaesque in your application.
   """
 
-  use GenServer
-
   alias Kafkaesque.Message
 
   @doc """
@@ -74,35 +72,7 @@ defmodule Kafkaesque do
   the table. Defaults to 72 hours.
   """
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts)
-  end
-
-  @impl GenServer
-  def init(opts) do
-    {:ok, producer_pid} = Kafkaesque.Producer.start_link(opts)
-
-    {:ok, publisher_pid} =
-      opts
-      |> Keyword.put(:producer_pid, producer_pid)
-      |> Kafkaesque.Publisher.start_link()
-
-    {:ok, acknowledger_pid} =
-      opts
-      |> Keyword.put(:publisher_pid, publisher_pid)
-      |> Kafkaesque.Acknowledger.start_link()
-
-    {:ok, rescuer} = Kafkaesque.Rescuer.start_link(opts)
-
-    {:ok, garbage_collector} = Kafkaesque.GarbageCollector.start_link(opts)
-
-    {:ok,
-     %{
-       producer: producer_pid,
-       publisher: publisher_pid,
-       acknowledger: acknowledger_pid,
-       rescuer: rescuer,
-       garbage_collector: garbage_collector
-     }}
+    {:ok, _supervisor} = Kafkaesque.Supervisor.start_link(opts)
   end
 
   defmacro __using__(opts) do

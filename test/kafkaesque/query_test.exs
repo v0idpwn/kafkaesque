@@ -14,6 +14,7 @@ defmodule Kafkaesque.QueryTest do
       Repo.insert(%Message{topic: "foobar", partition: 0})
       Repo.insert(%Message{topic: "foobar", partition: 0})
       Repo.insert(%Message{topic: "foobaz", partition: 0, state: :publishing})
+      Repo.insert(%Message{topic: "foobaz", partition: 0})
       Repo.insert(%Message{topic: "foobaz", partition: 1})
 
       assert {:ok,

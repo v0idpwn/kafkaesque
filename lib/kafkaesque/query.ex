@@ -50,8 +50,12 @@ defmodule Kafkaesque.Query do
       )
       |> repo.update_all([])
       |> case do
-        {0, nil} -> []
-        {count, messages} -> {count, messages}
+        {0, nil} ->
+          {0, []}
+
+        {count, messages} ->
+          sorted = Enum.sort(messages, fn m1, m2 -> m1.id <= m2.id end)
+          {count, sorted}
       end
     end)
   end
