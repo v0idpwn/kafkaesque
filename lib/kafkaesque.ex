@@ -7,16 +7,16 @@ defmodule Kafkaesque do
   Kafkaesque is an outbox library built for PostgreSQL and designed, primarily,
   for Kafka, though usage with other software is possible and encouraged.
 
-  - Transactional safety for messages: if they were created, they **will** be
+  - **Transactional safety for messages:** if they were created, they **will** be
   eventually published. They're only created if the transaction commits.
-  - Ordering: messages are published sequentially for topic/partition combinations
-  - Shutdown safety: has graceful shutdown and rescue for cases where it doesn't
+  - **Ordering:** messages are published sequentially for topic/partition combinations
+  - **Shutdown safety:** has graceful shutdown and rescue for cases where it doesn't
   happen.
-  - Observability: all operations publish telemetry events.
-  - Garbage collection: outbox table is periodically cleaned.
-  - Multi-node safe: safety powered by PostgreSQL.
+  - **Observability:** all operations publish telemetry events.
+  - **Garbage collection:** outbox table is periodically cleaned.
+  - **Multi-node safe:** safety powered by PostgreSQL.
 
-  For a comprehensive installation guide, check the [Getting started]("getting-started.md")
+  For a comprehensive installation guide, check the [Getting started](getting-started.html)
   guide.
 
   ![Basic diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/v0idpwn/kafkaesque/master/diagrams/basic.iuml)
