@@ -1,4 +1,8 @@
 defmodule Kafkaesque.Supervisor do
+  @moduledoc """
+  Supervisor for Kafkaesque
+  """
+
   use Supervisor
 
   def start_link(opts) do

@@ -70,7 +70,7 @@ defmodule MyApp.Application do
   def start(_type, _args) do
     children = [
       MyApp.Repo,
-      {Kafkaesque, [repo: MyApp.Repo, client_opts: [brokers: [{"localhost, 9092"}]]]},
+      {Kafkaesque, [repo: MyApp.Repo, client_opts: [client_id: :my_client, brokers: [{"localhost, 9092"}]]]},
     ]
   end
 end
