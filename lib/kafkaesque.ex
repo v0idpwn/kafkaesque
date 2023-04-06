@@ -32,6 +32,19 @@ defmodule Kafkaesque do
 
   alias Kafkaesque.Message
 
+  @default_opts [
+    client: Kafkaesque.Clients.BrodClient,
+    client_opts: [],
+    producer_max_backoff_ms: 500,
+    publisher_min_demand: 190,
+    publisher_max_demand: 200,
+    rescuer_interval_ms: :timer.seconds(15),
+    rescuer_limit_ms: :timer.seconds(15),
+    garbage_collector_interval_ms: :timer.seconds(30),
+    garbage_collector_limit_ms: :timer.hours(72),
+    log_queries: false
+  ]
+
   @doc """
   Publishes a message in the outbox.
 
@@ -57,6 +70,10 @@ defmodule Kafkaesque do
   default client requires options, so this can be considered required for most
   use-cases. Look at the client documentation for more information about the
   client options.
+  - `:producer_max_backoff_ms`: maximum time in milliseconds that the producer will
+  take between database reads. Notice that this is edge-case scenario and should
+  only happen when a) there are database issues or b) there are no new messages
+  in the table for long.
   - `:publisher_max_demand`: maximum publisher demand, can be useful for tuning.
   Defaults to 200. See `GenStage` documentation for more info.
   - `:publisher_min_demand`: minimum publisher demand, can be useful for tuning.
@@ -70,12 +87,15 @@ defmodule Kafkaesque do
   runs. Defaults to 30 seconds. Notice that it always runs on tree startup.
   - `garbage_colletor_limit_ms`: the time limit for published records to be in
   the table. Defaults to 72 hours.
+  - `log_queries`: Whether to log the queries. Defaults to `false`.
   """
   def start_link(opts) do
-     Kafkaesque.Supervisor.start_link(opts)
+    opts = Keyword.validate!(opts, [:repo] ++ @default_opts)
+    Kafkaesque.Supervisor.start_link(opts)
   end
 
   def child_spec(opts) do
+    opts = Keyword.validate!(opts, [:repo] ++ @default_opts)
     Kafkaesque.Supervisor.child_spec(opts)
   end
 

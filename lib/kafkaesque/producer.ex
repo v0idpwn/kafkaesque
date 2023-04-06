@@ -3,7 +3,7 @@ defmodule Kafkaesque.Producer do
   Queries the database for messages to be published
 
   Takes 2 options on startup:
-  - `:max_producer_backoff`: maximum time in milliseconds that the producer will
+  - `:producer_max_backoff_ms`: maximum time in milliseconds that the producer will
   take between database reads. Notice that this is edge-case scenario and should
   only happen when a) there are database issues or b) there are no new messages
   in the table for long
@@ -25,7 +25,7 @@ defmodule Kafkaesque.Producer do
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
-    max_backoff = Keyword.get(opts, :max_backoff, 500)
+    max_backoff = Keyword.fetch!(opts, :producer_max_backoff_ms)
 
     {:producer,
      %{

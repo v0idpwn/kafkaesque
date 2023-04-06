@@ -33,11 +33,11 @@ defmodule Kafkaesque.Publisher do
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
-    client_mod = Keyword.get(opts, :client, Kafkaesque.Clients.BrodClient)
-    client_opts = Keyword.get(opts, :client_opts, [])
+    client_mod = Keyword.fetch!(opts, :client)
+    client_opts = Keyword.fetch!(opts, :client_opts)
     producer_pid = Keyword.fetch!(opts, :producer_pid)
-    min_demand = Keyword.get(opts, :publisher_min_demand, 190)
-    max_demand = Keyword.get(opts, :publisher_max_demand, 200)
+    min_demand = Keyword.fetch!(opts, :publisher_min_demand)
+    max_demand = Keyword.fetch!(opts, :publisher_max_demand)
 
     {:ok, client} = client_mod.start_link(client_opts)
 

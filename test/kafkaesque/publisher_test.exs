@@ -85,6 +85,8 @@ defmodule Kafkaesque.PublisherTest do
       Kafkaesque.Publisher.start_link(
         repo: Kafkaesque.Test.Repo,
         producer_pid: producer_pid,
+        publisher_min_demand: 190,
+        publisher_max_demand: 200,
         client: StubClient,
         client_opts: [test_pid: self()]
       )
