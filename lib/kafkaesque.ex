@@ -72,7 +72,11 @@ defmodule Kafkaesque do
   the table. Defaults to 72 hours.
   """
   def start_link(opts) do
-    {:ok, _supervisor} = Kafkaesque.Supervisor.start_link(opts)
+     Kafkaesque.Supervisor.start_link(opts)
+  end
+
+  def child_spec(opts) do
+    Kafkaesque.Supervisor.child_spec(opts)
   end
 
   defmacro __using__(opts) do
