@@ -10,6 +10,7 @@ defmodule Kafkaesque.Rescuer do
 
   Takes 3 options on startup:
   - `:repo`: the repo to perform garbage collection on
+  - `:query_opts`: A list of options sent to Repo calls.
   - `:rescuer_interval_ms`: the interval between garbage collection
   runs. Notice that it always runs on tstartup.
   - `rescuer_limit_ms`: the time limit for records to be in the publishing
@@ -27,16 +28,17 @@ defmodule Kafkaesque.Rescuer do
   @impl GenServer
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
+    query_opts = Keyword.fetch!(opts, :query_opts)
     interval_ms = Keyword.fetch!(opts, :rescuer_interval_ms)
     limit_ms = Keyword.fetch!(opts, :rescuer_limit_ms)
 
-    {:ok, %{repo: repo, interval_ms: interval_ms, limit_ms: limit_ms}, {:continue, :rescue}}
+    {:ok, %{repo: repo, query_opts: query_opts, interval_ms: interval_ms, limit_ms: limit_ms}, {:continue, :rescue}}
   end
 
   @impl GenServer
   def handle_continue(:rescue, state) do
     :telemetry.span([:kafkaesque, :rescue], %{repo: state.repo}, fn ->
-      {Query.rescue_publishing(state.repo, state.limit_ms), %{}}
+      {Query.rescue_publishing(state.repo, state.limit_ms, state.query_opts), %{}}
     end)
 
     {:noreply, state, {:continue, :schedule_next}}

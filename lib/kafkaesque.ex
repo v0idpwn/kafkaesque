@@ -42,7 +42,7 @@ defmodule Kafkaesque do
     rescuer_limit_ms: :timer.seconds(15),
     garbage_collector_interval_ms: :timer.seconds(30),
     garbage_collector_limit_ms: :timer.hours(72),
-    log_queries: false
+    query_opts: [log: false]
   ]
 
   @doc """
@@ -87,7 +87,7 @@ defmodule Kafkaesque do
   runs. Defaults to 30 seconds. Notice that it always runs on tree startup.
   - `garbage_colletor_limit_ms`: the time limit for published records to be in
   the table. Defaults to 72 hours.
-  - `log_queries`: Whether to log the queries. Defaults to `false`.
+  - `query_opts`: Options to pass to Ecto queries. Defaults to [log: false]
   """
   def start_link(opts) do
     opts = Keyword.validate!(opts, [:repo] ++ @default_opts)

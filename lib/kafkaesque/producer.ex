@@ -6,8 +6,9 @@ defmodule Kafkaesque.Producer do
   - `:producer_max_backoff_ms`: maximum time in milliseconds that the producer will
   take between database reads. Notice that this is edge-case scenario and should
   only happen when a) there are database issues or b) there are no new messages
-  in the table for long
-  - `:repo`: the repo the producer will query on
+  in the table for long.
+  - `:repo`: the repo the producer will query on.
+  - `:query_opts`: A list of options sent to Repo calls.
   """
 
   use GenStage
@@ -25,11 +26,13 @@ defmodule Kafkaesque.Producer do
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
+    query_opts = Keyword.fetch!(opts, :query_opts)
     max_backoff = Keyword.fetch!(opts, :producer_max_backoff_ms)
 
     {:producer,
      %{
        repo: repo,
+       query_opts: query_opts,
        demand: 0,
        producing?: true,
        max_backoff: max_backoff,
@@ -72,7 +75,7 @@ defmodule Kafkaesque.Producer do
     if state.producing? do
       :telemetry.span([:kafkaesque, :produce], %{repo: state.repo, demand: demand}, fn ->
         response =
-          case Query.pending_messages(state.repo, demand) do
+          case Query.pending_messages(state.repo, demand, state.query_opts) do
             {:ok, {count, messages}} ->
               remaining_demand = demand - count
 

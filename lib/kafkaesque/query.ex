@@ -14,9 +14,9 @@ defmodule Kafkaesque.Query do
 
   Sets those messages to the `publishing` state.
   """
-  @spec pending_messages(Ecto.Repo.t(), pos_integer()) ::
+  @spec pending_messages(Ecto.Repo.t(), pos_integer(), Keyword.t()) ::
           {:ok, {integer(), list(Message.t())}} | {:error, atom()}
-  def pending_messages(repo, demand) do
+  def pending_messages(repo, demand, query_opts \\ []) do
     publishing_topic_partitions =
       Message
       |> group_by([m], [m.topic, m.partition])
@@ -35,7 +35,7 @@ defmodule Kafkaesque.Query do
       |> limit(^demand)
 
     repo.transaction(fn ->
-      repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key])
+      repo.query!("SELECT pg_advisory_xact_lock($1)", [@xact_lock_key], query_opts)
 
       Message
       |> where([m], m.id in subquery(subset))
@@ -48,7 +48,7 @@ defmodule Kafkaesque.Query do
         ],
         inc: [attempt: 1]
       )
-      |> repo.update_all([])
+      |> repo.update_all([], query_opts)
       |> case do
         {0, nil} ->
           {0, []}
@@ -57,45 +57,45 @@ defmodule Kafkaesque.Query do
           sorted = Enum.sort(messages, fn m1, m2 -> m1.id <= m2.id end)
           {count, sorted}
       end
-    end)
+    end, query_opts)
   end
 
-  @spec update_success_batch(Ecto.Repo.t(), [pos_integer()]) :: :ok
-  def update_success_batch(repo, ids) do
-    update_batch(repo, ids, "published")
+  @spec update_success_batch(Ecto.Repo.t(), [pos_integer()], Keyword.t()) :: :ok
+  def update_success_batch(repo, ids, query_opts \\ []) do
+    update_batch(repo, ids, "published", query_opts)
   end
 
-  @spec update_failed_batch(Ecto.Repo.t(), [pos_integer()]) :: :ok
-  def update_failed_batch(repo, ids) do
-    update_batch(repo, ids, "failed")
+  @spec update_failed_batch(Ecto.Repo.t(), [pos_integer()], Keyword.t()) :: :ok
+  def update_failed_batch(repo, ids, query_opts \\ []) do
+    update_batch(repo, ids, "failed", query_opts)
   end
 
-  defp update_batch(repo, ids, new_state) do
+  defp update_batch(repo, ids, new_state, query_opts) do
     from(Message)
     |> where([m], m.id in ^ids)
-    |> repo.update_all(set: [state: new_state])
+    |> repo.update_all([set: [state: new_state]], query_opts)
   end
 
-  @spec rescue_publishing(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
+  @spec rescue_publishing(Ecto.Repo.t(), time_limit_ms :: pos_integer(), Keyword.t()) ::
           {pos_integer(), nil}
-  def rescue_publishing(repo, time_limit_ms) do
+  def rescue_publishing(repo, time_limit_ms, query_opts \\ []) do
     time_limit_s = time_limit_ms / 1000
 
     from(Message)
     |> where([m], m.state == :publishing)
     |> where([m], m.attempted_at < ago(^time_limit_s, "second"))
     |> update([m], set: [state: :pending])
-    |> repo.update_all([])
+    |> repo.update_all([], query_opts)
   end
 
-  @spec garbage_collect(Ecto.Repo.t(), time_limit_ms :: pos_integer()) ::
+  @spec garbage_collect(Ecto.Repo.t(), time_limit_ms :: pos_integer(), Keyword.t()) ::
           {pos_integer(), nil}
-  def garbage_collect(repo, time_limit_ms) do
+  def garbage_collect(repo, time_limit_ms, query_opts \\ []) do
     time_limit_s = time_limit_ms / 1000
 
     from(Message)
     |> where([m], m.state == :published)
     |> where([m], m.attempted_at < ago(^time_limit_s, "second"))
-    |> repo.delete_all()
+    |> repo.delete_all(query_opts)
   end
 end

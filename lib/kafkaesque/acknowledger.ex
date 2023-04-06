@@ -4,7 +4,8 @@ defmodule Kafkaesque.Acknowledger do
 
   Takes 3 options:
   - `:publisher_pid`: pid of the stage that will publish the messages.
-  - `:repo`: the repo to execute the queries on.  - `:client_opts`: A list of options to be passed to the client on startup.
+  - `:repo`: the repo to execute the queries on.
+  - `:query_opts`: A list of options sent to Repo calls.
   """
 
   use GenStage
@@ -16,11 +17,12 @@ defmodule Kafkaesque.Acknowledger do
   @impl GenStage
   def init(opts) do
     repo = Keyword.fetch!(opts, :repo)
+    query_opts = Keyword.fetch!(opts, :query_opts)
     publisher_pid = Keyword.fetch!(opts, :publisher_pid)
 
     {
       :consumer,
-      %{repo: repo},
+      %{repo: repo, query_opts: query_opts},
       [subscribe_to: [publisher_pid]]
     }
   end
@@ -49,10 +51,10 @@ defmodule Kafkaesque.Acknowledger do
   defp handle_event({_, []}, state), do: {:noreply, [], state}
 
   defp handle_event({:success_batch, items}, state) do
-    Kafkaesque.Query.update_success_batch(state.repo, items)
+    Kafkaesque.Query.update_success_batch(state.repo, items, state.query_opts)
   end
 
   defp handle_event({:failure_batch, items}, state) do
-    Kafkaesque.Query.update_failed_batch(state.repo, items)
+    Kafkaesque.Query.update_failed_batch(state.repo, items, state.query_opts)
   end
 end
