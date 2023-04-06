@@ -18,6 +18,7 @@ defmodule Kafkaesque.Pipeline do
     GenServer.start_link(__MODULE__, opts)
   end
 
+  @impl GenServer
   def init(opts) do
     Process.flag(:trap_exit, true)
 
@@ -41,6 +42,12 @@ defmodule Kafkaesque.Pipeline do
      }}
   end
 
+  @impl GenServer
+  def handle_info({:EXIT, _pid, reason}, state) do
+    {:stop, reason, state}
+  end
+
+  @impl GenServer
   def terminate(:shutdown, state) do
     # Drain
     :ok = Producer.stop_producing(state.producer)
