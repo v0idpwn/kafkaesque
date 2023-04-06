@@ -45,7 +45,7 @@ defmodule Kafkaesque.GarbageCollector do
   end
 
   @impl GenServer
-  def handle_info(:rescue, state) do
+  def handle_info(:garbage_collect, state) do
     {:noreply, state, {:continue, :garbage_collect}}
   end
 end
