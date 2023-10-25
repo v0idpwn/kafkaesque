@@ -50,10 +50,10 @@ defmodule Kafkaesque do
   use the library. See the documentation of the `Kafkaesque` module for more
   information.
   """
-  @spec publish(Ecto.Repo.t(), String.t(), term(), String.t()) ::
-          {:ok, Message.t()} | {:error, atom()}
-  def publish(repo, topic, partition, payload) do
-    message = Message.new(topic, partition, payload)
+  @spec publish(Ecto.Repo.t(), String.t(), term(), String.t(), String.t()) ::
+          {:ok, Message.t()} | {:error, Ecto.Changeset.t()}
+  def publish(repo, topic, partition, key, payload) do
+    message = Message.new(topic, partition, key, payload)
     repo.insert(message)
   end
 
@@ -108,11 +108,14 @@ defmodule Kafkaesque do
     {repo, _opts} = Keyword.pop!(opts, :repo)
 
     quote do
-      @spec publish(String.t(), term()) :: {:ok, Kafkaesque.Message.t()} | {:error, atom()}
-      def publish(topic, body) do
+      @on_definition {Kafkaesque.CompileHooks, :on_def}
+
+      @spec publish(String.t(), String.t(), term()) ::
+              {:ok, Kafkaesque.Message.t()} | {:error, Ecto.Changeset.t()}
+      def publish(topic, key \\ "", body) do
         payload = encode(body)
-        partition = partition(topic, body)
-        Kafkaesque.publish(unquote(repo), topic, partition, payload)
+        partition = partition(topic, key, body)
+        Kafkaesque.publish(unquote(repo), topic, partition, key, payload)
       end
 
       @spec encode(term()) :: String.t()
@@ -120,8 +123,8 @@ defmodule Kafkaesque do
         body
       end
 
-      @spec partition(String.t(), term()) :: integer()
-      def partition(_topic, _body) do
+      @spec partition(String.t(), String.t(), term()) :: integer()
+      def partition(_topic, _key, _body) do
         0
       end
 
@@ -137,7 +140,7 @@ defmodule Kafkaesque do
         Kafkaesque.child_spec(opts)
       end
 
-      defoverridable encode: 1, partition: 2
+      defoverridable encode: 1, partition: 3
     end
   end
 end

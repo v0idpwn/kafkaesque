@@ -34,6 +34,7 @@ defmodule Kafkaesque.Message do
     )
 
     field(:partition, :integer)
+    field(:key, :string, default: "")
     field(:body, :string)
     field(:attempt, :integer, default: 0)
     field(:attempted_by, :string)
@@ -44,12 +45,13 @@ defmodule Kafkaesque.Message do
     timestamps()
   end
 
-  @spec new(String.t(), String.t(), String.t()) :: Ecto.Changeset.t()
-  def new(topic, partition, body) do
+  @spec new(String.t(), String.t(), String.t(), String.t()) :: Ecto.Changeset.t()
+  def new(topic, partition, key, body) do
     %__MODULE__{}
-    |> cast(%{topic: topic, partition: partition, body: body}, [
+    |> cast(%{topic: topic, partition: partition, body: body, key: key}, [
       :topic,
       :partition,
+      :key,
       :body
     ])
     |> validate_required([:topic, :partition, :body])

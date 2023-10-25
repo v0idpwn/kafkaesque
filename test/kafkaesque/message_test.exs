@@ -8,20 +8,22 @@ defmodule Kafkaesque.MessageTest do
       topic = "sample"
       body = "body"
       partition = 0
+      key = "some"
 
       assert %Ecto.Changeset{
                errors: [],
-               changes: %{topic: ^topic, body: ^body, partition: ^partition}
-             } = Message.new(topic, partition, body)
+               changes: %{topic: ^topic, body: ^body, partition: ^partition, key: ^key}
+             } = Message.new(topic, partition, key, body)
     end
 
     test "returns invalid changeset for invalid input" do
       topic = 1
       body = {1, 2}
+      key = 2
       partition = "notanumber"
 
-      assert %Ecto.Changeset{errors: [topic: _, partition: _, body: _]} =
-               Message.new(topic, partition, body)
+      assert %Ecto.Changeset{errors: [topic: _, partition: _, key: _, body: _]} =
+               Message.new(topic, partition, key, body)
     end
   end
 end
