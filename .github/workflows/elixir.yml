@@ -11,46 +11,6 @@ jobs:
 
     name: Build and test
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kafkaesque_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      kafka:
-        image: wurstmeister/kafka
-        env:
-          KAFKA_ADVERTISED_HOST_NAME: localhost
-          KAFKA_ADVERTISED_PORT: 9092
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        ports:
-          - 9092:9092
-        depends-on:
-          - zookeeper
-        options: >-
-          --health-cmd "nc -z localhost 9092"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      zookeeper:
-        image: wurstmeister/zookeeper
-        ports:
-          - 2181:2181
-        options: >-
-          --health-cmd "echo stat | nc localhost 2181 | grep Mode"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - uses: actions/checkout@v3
     - uses: erlef/setup-beam@v1
@@ -63,6 +23,26 @@ jobs:
         path: deps
         key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
         restore-keys: ${{ runner.os }}-mix-
+    - name: Start supporting services
+      run: docker compose --profile with-postgres up -d
+    - name: Ensure Schema Registry is started
+      # Copied from: https://github.com/happening-oss/kafka-client/blob/develop/.github/workflows/ci.yml
+      run: |
+        # give up after 60 seconds
+        max_wait_time=60
+
+        # Use a loop to check if Schema Registry is ready
+        start_time=$(date +%s)
+        until docker compose logs schema-registry | grep -q "started"; do
+          current_time=$(date +%s)
+          elapsed_time=$((current_time - start_time))
+          if [ "$elapsed_time" -ge "$max_wait_time" ]; then
+            echo "Schema Registry did not start within the specified timeout."
+            exit 1  # Exit the workflow with an error
+          fi
+
+          sleep 5
+        done
     - name: Install dependencies
       run: mix deps.get
     - name: Setup Database
