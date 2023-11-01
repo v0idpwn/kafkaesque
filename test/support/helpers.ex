@@ -35,8 +35,10 @@ defmodule Kafkaesque.Test.Helpers do
       }
     ]
 
-    _ = :brod.create_topics([{"localhost", 9092}], topic_configs, %{timeout: 15_000})
-
-    :ok
+    case :brod.create_topics([{"localhost", 9092}], topic_configs, %{timeout: 15_000}) do
+      :ok -> :ok
+      {:error, :topic_already_exists} -> :ok
+      resp -> raise "Couldn't create topics - :brod.create_topics/3 returned #{inspect(resp)}"
+    end
   end
 end
