@@ -37,7 +37,7 @@ defmodule Kafkaesque.IntegrationTest do
     assert message.state == :pending
 
     # Could perform some synchronization to avoid sleeping
-    :timer.sleep(500)
+    :timer.sleep(1000)
 
     message2 = Repo.reload(message)
 
