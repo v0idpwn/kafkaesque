@@ -25,12 +25,3 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-  schema-registry:
-    image: confluentinc/cp-schema-registry:7.5.1
-    environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
-      SCHEMA_REGISTRY_HOST_NAME: localhost
-    ports:
-      - 8081:8081
-    depends_on:
-      - kafka
