@@ -2,32 +2,14 @@ defmodule Kafkaesque.Test.Helpers do
   def create_topics() do
     topic_configs = [
       %{
-        configs: [
-          %{
-            name: "cleanup.policy",
-            value: "compact"
-          },
-          %{
-            name: "confluent.value.schema.validation",
-            value: false
-          }
-        ],
+        configs: [],
         num_partitions: 1,
         replication_factor: 1,
         assignments: [],
         name: "integration_test_topic"
       },
       %{
-        configs: [
-          %{
-            name: "cleanup.policy",
-            value: "compact"
-          },
-          %{
-            name: "confluent.value.schema.validation",
-            value: true
-          }
-        ],
+        configs: [],
         num_partitions: 1,
         replication_factor: 1,
         assignments: [],
