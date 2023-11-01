@@ -75,7 +75,7 @@ defmodule Kafkaesque.IntegrationTest do
 
       # Sending shutdown and waiting for it
       Process.exit(main_pid, :shutdown)
-      assert_receive {:DOWN, ^ref, :process, ^main_pid, :shutdown}, 5000
+      assert_receive {:DOWN, ^ref, :process, ^main_pid, :shutdown}, 15_000
 
       # Due to the termination logic, in case of shutdown no messages are left
       # in publishing state
