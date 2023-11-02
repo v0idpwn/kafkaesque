@@ -24,7 +24,7 @@ defmodule MyApp.Outbox do
 
   # Optional, sets the partition for the message. Should return an integer
   # Defaults to returning 0.
-  def partition(_topic, _body) do
+  def partition(_topic, _key, _body) do
     Enum.random(0..1)
   end
 
@@ -53,5 +53,5 @@ end
 Done! Now you can publish messages. Try it out with:
 
 ```elixir
-MyApp.Outbox.publish("topic", %{hello: :kafka})`
+MyApp.Outbox.publish("topic", "mykey", %{hello: :kafka})`
 ```
