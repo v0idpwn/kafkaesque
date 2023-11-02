@@ -27,3 +27,17 @@ end
 ## Getting started
 
 Check the [Getting started](https://hexdocs.pm/kafkaesque/getting-started.html) guide in Hexdocs.
+
+## Updating versions
+To go from 1.0.0-rc.1 to 1.0.0-rc.2, an additional migration is needed:
+
+```elixir
+defmodule MyApp.Migrations.BumpKafkaesque do
+  use Ecto.Migration
+
+  def up, do: Kafkaesque.Migrations.up(:v1, :v2)
+  def down, do: Kafkaesque.Migrations.down(:v2, :v1)
+end
+```
+
+No extra steps are required if 1.0.0-rc.2 or a newer version was installed.
