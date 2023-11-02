@@ -27,7 +27,7 @@ defmodule Kafkaesque.Migrations do
 
   def up(:v1, :v2) do
     alter table(:kafkaesque_messages) do
-      add(:key, :binary, default: "", null: false)
+      add_if_not_exists(:key, :binary, default: "", null: false)
     end
   end
 
@@ -35,7 +35,7 @@ defmodule Kafkaesque.Migrations do
 
   def down(:v2, :v1) do
     alter table(:kafkaesque_messages) do
-      remove(:key)
+      remove_if_exists(:key, :binary)
     end
   end
 end
