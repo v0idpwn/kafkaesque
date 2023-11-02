@@ -64,6 +64,6 @@ defmodule Kafkaesque.Clients.BrodClient do
     ("#{inspect(__MODULE__)} failure publishing message batch to topic " <>
        "#{inspect(topic)} partition #{inspect(partition)} with error " <>
        inspect(error))
-    |> Logger.warn()
+    |> Logger.warning()
   end
 end
