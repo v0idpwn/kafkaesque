@@ -90,7 +90,7 @@ defmodule Kafkaesque.Producer do
             error ->
               backoff = next_backoff(state.backoff, state.max_backoff, 0)
 
-              Logger.warn(
+              Logger.warning(
                 "#{inspect(__MODULE__)}.produce_messages/2 failed with #{inspect(error)}, retrying in #{backoff}ms"
               )
 

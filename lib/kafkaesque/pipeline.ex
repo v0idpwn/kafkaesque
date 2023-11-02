@@ -59,6 +59,6 @@ defmodule Kafkaesque.Pipeline do
   end
 
   def terminate(reason, _state) do
-    Logger.warn("#{inspect(__MODULE__)} terminating with reason #{inspect(reason)}")
+    Logger.warning("#{inspect(__MODULE__)} terminating with reason #{inspect(reason)}")
   end
 end
