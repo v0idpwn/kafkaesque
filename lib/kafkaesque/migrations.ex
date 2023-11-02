@@ -35,7 +35,7 @@ defmodule Kafkaesque.Migrations do
 
   def down(:v2, :v1) do
     alter table(:kafkaesque_messages) do
-      drop(:key)
+      remove(:key)
     end
   end
 end
