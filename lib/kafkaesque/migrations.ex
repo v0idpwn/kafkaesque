@@ -31,7 +31,15 @@ defmodule Kafkaesque.Migrations do
     end
   end
 
+  def up(:v2, :v3) do
+    create_if_not_exists(index(:kafkaesque_messages, [:state]))
+  end
+
   def down(current, previous)
+
+  def down(:v3, :v2) do
+    drop(index(:kafkaesque_messages, [:state]))
+  end
 
   def down(:v2, :v1) do
     alter table(:kafkaesque_messages) do
