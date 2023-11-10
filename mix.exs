@@ -34,7 +34,7 @@ defmodule Kafkaesque.MixProject do
       {:ecto_sql, ">= 3.4.3"},
       {:jason, "~> 1.1"},
       {:postgrex, "~> 0.14"},
-      {:telemetry, "~> 1.0"},
+      {:telemetry, "~> 0.4 or ~> 1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, ">= 0.0.0", only: :dev, runtime: false}
     ]
