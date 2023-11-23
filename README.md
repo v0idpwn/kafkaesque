@@ -35,8 +35,15 @@ To go from 1.0.0-rc.1 to 1.0.0-rc.2, an additional migration is needed:
 defmodule MyApp.Migrations.BumpKafkaesque do
   use Ecto.Migration
 
-  def up, do: Kafkaesque.Migrations.up(:v1, :v2)
-  def down, do: Kafkaesque.Migrations.down(:v2, :v1)
+  def up do
+    Kafkaesque.Migrations.up(:v1, :v2)
+    Kafkaesque.Migrations.up(:v2, :v3)
+  end
+
+  def down do
+    Kafkaesque.Migrations.down(:v3, :v2)
+    Kafkaesque.Migrations.down(:v2, :v1)
+  end
 end
 ```
 
