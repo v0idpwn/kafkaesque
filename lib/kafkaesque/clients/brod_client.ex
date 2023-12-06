@@ -39,7 +39,7 @@ defmodule Kafkaesque.Clients.BrodClient do
     task_results =
       task_supervisor
       |> Task.Supervisor.async_stream_nolink(message_batches, fn {{partition, topic}, values} ->
-        case :brod.produce_sync(client_id, topic, :hash, "", values) do
+        case :brod.produce_sync(client_id, topic, partition, "", values) do
           :ok ->
             {{partition, topic}, :success}
 
