@@ -14,7 +14,7 @@ defmodule KafkaesqueTest do
       invalid_key = 2
       invalid_partition = "notanumber"
 
-      assert {:error, %Ecto.Changeset{errors: [topic: _, partition: _, key: _, body: _]}} =
+      assert {:error, %Ecto.Changeset{errors: [topic: _, partition: _, key: _]}} =
                Kafkaesque.publish(
                  Repo,
                  invalid_topic,

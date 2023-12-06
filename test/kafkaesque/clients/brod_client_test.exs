@@ -31,7 +31,6 @@ defmodule Kafkaesque.Clients.BrodClientTest do
     message = %Kafkaesque.Message{
       id: 1,
       partition: 9,
-      topic: "integration_test_topic_2",
       body: "test_message"
     }
 

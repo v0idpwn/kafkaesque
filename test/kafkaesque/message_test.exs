@@ -22,7 +22,7 @@ defmodule Kafkaesque.MessageTest do
       key = 2
       partition = "notanumber"
 
-      assert %Ecto.Changeset{errors: [topic: _, partition: _, key: _, body: _]} =
+      assert %Ecto.Changeset{errors: [topic: _, partition: _, key: _]} =
                Message.new(topic, partition, key, body)
     end
   end
