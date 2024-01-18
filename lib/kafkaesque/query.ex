@@ -74,9 +74,16 @@ defmodule Kafkaesque.Query do
   end
 
   defp update_batch(repo, ids, new_state, query_opts) do
+    updates =
+      if new_state == "published" do
+        [set: [state: new_state, published_at: DateTime.utc_now()]]
+      else
+        [set: [state: new_state]]
+      end
+
     from(Message)
     |> where([m], m.id in ^ids)
-    |> repo.update_all([set: [state: new_state]], query_opts)
+    |> repo.update_all(updates, query_opts)
   end
 
   @spec rescue_publishing(Ecto.Repo.t(), time_limit_ms :: pos_integer(), Keyword.t()) ::
