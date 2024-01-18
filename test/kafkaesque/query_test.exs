@@ -42,7 +42,10 @@ defmodule Kafkaesque.QueryTest do
     test "updates the state of the messages" do
       {:ok, %{id: id}} = Repo.insert(%Message{topic: "foobar", partition: 0})
       assert {1, _} = Query.update_success_batch(Repo, [id])
-      assert %{state: :published} = Repo.get(Message, id)
+
+      message = Repo.get(Message, id)
+      assert message.state == :published
+      assert message.published_at != nil
     end
   end
 
