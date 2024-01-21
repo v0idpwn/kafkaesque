@@ -34,7 +34,8 @@ defmodule Kafkaesque.Clients.BrodClient do
   @impl Kafkaesque.Client
   def publish(%{brod_client_id: client_id, task_supervisor: task_supervisor}, messages) do
     # We pre-process the message bodies to avoid copying unecessary data to the task
-    message_batches = Enum.group_by(messages, &{&1.partition, &1.topic}, &{&1.key, &1.body})
+    message_batches =
+      Enum.group_by(messages, &{&1.partition, &1.topic}, & &1.body)
 
     task_results =
       task_supervisor

@@ -6,6 +6,18 @@ defmodule Kafkaesque.Message do
   use Ecto.Schema
   import Ecto.Changeset
 
+  defmodule Data do
+    use Ecto.Type
+
+    def type, do: :binary
+
+    def cast(term), do: {:ok, term}
+
+    def load(data) when is_binary(data), do: {:ok, :erlang.binary_to_term(data)}
+
+    def dump(term), do: {:ok, :erlang.term_to_binary(term)}
+  end
+
   @type state() ::
           :failed
           | :pending
@@ -16,7 +28,7 @@ defmodule Kafkaesque.Message do
           state: state(),
           topic: String.t(),
           partition: integer(),
-          body: String.t(),
+          body: term(),
           attempt: pos_integer(),
           attempted_by: String.t() | nil,
           attempted_at: NaiveDateTime.t() | nil,
@@ -35,7 +47,7 @@ defmodule Kafkaesque.Message do
 
     field(:partition, :integer)
     field(:key, :string, default: "")
-    field(:body, :string)
+    field(:body, __MODULE__.Data, default: %{})
     field(:attempt, :integer, default: 0)
     field(:attempted_by, :string)
 
@@ -45,7 +57,7 @@ defmodule Kafkaesque.Message do
     timestamps()
   end
 
-  @spec new(String.t(), String.t(), String.t(), String.t()) :: Ecto.Changeset.t()
+  @spec new(String.t(), integer(), String.t(), term()) :: Ecto.Changeset.t()
   def new(topic, partition, key, body) do
     %__MODULE__{}
     |> cast(%{topic: topic, partition: partition, body: body, key: key}, [

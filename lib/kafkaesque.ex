@@ -50,7 +50,7 @@ defmodule Kafkaesque do
   use the library. See the documentation of the `Kafkaesque` module for more
   information.
   """
-  @spec publish(Ecto.Repo.t(), String.t(), term(), String.t(), String.t()) ::
+  @spec publish(Ecto.Repo.t(), String.t(), integer(), String.t(), term()) ::
           {:ok, Message.t()} | {:error, Ecto.Changeset.t()}
   def publish(repo, topic, partition, key, payload) do
     message = Message.new(topic, partition, key, payload)
@@ -118,7 +118,7 @@ defmodule Kafkaesque do
         Kafkaesque.publish(unquote(repo), topic, partition, key, payload)
       end
 
-      @spec encode(term()) :: String.t()
+      @spec encode(term()) :: term()
       def encode(body) do
         body
       end
